@@ -83,16 +83,12 @@ export async function setMark(
 
 // Same as the reference: picking adds the person at the end; unpicking
 // removes them and moves everyone picked after them up by one.
+// Picking requires an active staff member; unpicking doesn't, so someone
+// deactivated after being picked can still be removed.
 export async function togglePick(date: string, staffId: number): Promise<WriteResult> {
   if (!Number.isInteger(staffId)) throw new Error(`Invalid staff id ${staffId}`);
   const stale = dayChanged(date);
   if (stale) return stale;
-
-  const [member] = await db
-    .select({ id: staff.id })
-    .from(staff)
-    .where(and(eq(staff.id, staffId), eq(staff.active, true)));
-  if (!member) throw new Error(`No active staff member ${staffId}`);
 
   const [picked] = await db
     .select({ pickOrder: dayStaff.pickOrder })
@@ -111,6 +107,13 @@ export async function togglePick(date: string, staffId: number): Promise<WriteRe
         .where(and(eq(dayStaff.date, date), gt(dayStaff.pickOrder, picked.pickOrder))),
     ]);
   } else {
+    // Only active staff can be picked; anyone picked can be unpicked
+    const [member] = await db
+      .select({ id: staff.id })
+      .from(staff)
+      .where(and(eq(staff.id, staffId), eq(staff.active, true)));
+    if (!member) throw new Error(`No active staff member ${staffId}`);
+
     // Next pick number computed in the same statement as the insert
     await db.insert(dayStaff).values({
       date,
