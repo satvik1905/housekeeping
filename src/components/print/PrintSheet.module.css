@@ -17,6 +17,9 @@
   line-height: 1.45;
   -webkit-font-smoothing: auto;
   -moz-osx-font-smoothing: auto;
+  /* Print header and row shading even with background graphics off */
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
 }
 
 .page:last-child {
