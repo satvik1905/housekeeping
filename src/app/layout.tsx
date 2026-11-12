@@ -6,6 +6,7 @@ import {
   MantineProvider,
   mantineHtmlProps,
 } from "@mantine/core";
+import { theme } from "@/theme";
 
 export const metadata: Metadata = {
   title: "Monarch Housekeeping",
@@ -15,10 +16,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" {...mantineHtmlProps}>
       <head>
-        <ColorSchemeScript />
+        <ColorSchemeScript forceColorScheme="light" />
       </head>
       <body>
-        <MantineProvider>{children}</MantineProvider>
+        <MantineProvider theme={theme} forceColorScheme="light">
+          {children}
+        </MantineProvider>
       </body>
     </html>
   );
