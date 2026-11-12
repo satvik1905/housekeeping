@@ -9,15 +9,9 @@ import { RoomGrid } from "@/components/RoomGrid";
 import { RoomTile } from "@/components/RoomTile";
 import { StaffChip } from "@/components/StaffChip";
 import { StatusCounts } from "@/components/StatusCounts";
-import type { Floor } from "@/data/rooms";
-import { ROOMS } from "@/data/rooms";
+import { FLOORS, ROOMS } from "@/data/rooms";
 import { ROLE_GROUPS } from "@/data/staff";
 import { useTodayFlow } from "./TodayFlow";
-
-const FLOORS: { floor: Floor; title: string }[] = [
-  { floor: 1, title: "100s" },
-  { floor: 2, title: "200s" },
-];
 
 // Step 1: mark rooms and pick who's working
 export default function RoomsStep() {

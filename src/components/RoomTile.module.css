@@ -15,9 +15,21 @@
   font-weight: 700;
 }
 
-.status {
+/* Status (and the Assign step's slot) sit at the bottom of the tile */
+.bottom {
   margin-top: auto;
+  padding-top: var(--mantine-spacing-xs);
+  width: 100%;
+}
+
+.status {
   font-weight: 600;
+}
+
+/* Something is being dragged over this tile */
+.root[data-drop-target] {
+  outline: 2px solid var(--mantine-primary-color-filled);
+  outline-offset: 2px;
 }
 
 .root[data-status="checkout"] {

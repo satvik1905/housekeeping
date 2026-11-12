@@ -1,0 +1,9 @@
+.root {
+  cursor: grab;
+  touch-action: none;
+}
+
+/* The original stays in place, faded, while its copy is dragged */
+.root[data-dragging] {
+  opacity: 0.4;
+}

@@ -14,7 +14,7 @@ import type { RoomStatus } from "@/data/status";
 import { useDayRefresh } from "@/hooks/useDayRefresh";
 import { prettyDate } from "@/lib/date";
 import { createSaveQueue } from "@/lib/saveQueue";
-import { clearDay, getToday, setMark, togglePick } from "@/server/today";
+import { assignRoom, clearDay, getToday, setMark, togglePick } from "@/server/today";
 import type { Today, TodayStaff, WriteResult } from "@/server/todayData";
 
 // The flow's steps, in order
@@ -43,6 +43,8 @@ type TodayContextValue = {
   toggleRoom: (number: number) => void;
   toggleStaff: (member: TodayStaff) => void;
   confirmClear: () => void;
+  // Assign a room to a housekeeper, or unassign it (null)
+  assign: (roomNumber: number, staffId: number | null) => void;
 };
 
 const TodayContext = createContext<TodayContextValue | null>(null);
@@ -87,9 +89,14 @@ export function TodayFlow({ initial, children }: TodayFlowProps) {
     }
   }, [queue]);
 
-  // Queue one save. On failure the screen keeps the tap. If the day
-  // changed, reload today (not awaited: reload waits for this save).
-  const save = (key: string, write: () => Promise<WriteResult>) => {
+  // Queue one save. On failure the screen keeps the tap, unless
+  // reloadOnFail (then it's reset from the database). If the day changed,
+  // reload today. Reloads aren't awaited: reload waits for this save.
+  const save = (
+    key: string | string[],
+    write: () => Promise<WriteResult>,
+    { reloadOnFail = false } = {},
+  ) => {
     taps.current++;
     const task = async () => {
       try {
@@ -99,6 +106,7 @@ export function TodayFlow({ initial, children }: TodayFlowProps) {
           showDayChanged();
         }
       } catch {
+        if (reloadOnFail) void reload();
         showSaveFailed();
       }
     };
@@ -158,10 +166,28 @@ export function TodayFlow({ initial, children }: TodayFlowProps) {
       },
     });
 
+  // Saved in the room's queue, after any pending pick saves (assigning
+  // needs the person picked). A failed or rejected save (say the room was
+  // just unmarked elsewhere) resets the screen from the database.
+  const assign = (roomNumber: number, staffId: number | null) => {
+    if ((day.assignments[roomNumber] ?? null) === staffId) return;
+    setDay((current) => {
+      const assignments = { ...current.assignments };
+      if (staffId === null) delete assignments[roomNumber];
+      else assignments[roomNumber] = staffId;
+      return { ...current, assignments };
+    });
+    save([`room:${roomNumber}`, "picks"], () => assignRoom(day.date, roomNumber, staffId), {
+      reloadOnFail: true,
+    });
+  };
+
   // Refresh on wake, and reset to the new day at midnight
   useDayRefresh(day.date, () => void reload());
 
   const nobodyPicked = day.picks.length === 0;
+  const marked = Object.keys(day.marks).map(Number);
+  const unassigned = marked.filter((number) => day.assignments[number] === undefined).length;
   const step = Math.max(
     0,
     STEPS.findIndex(({ href }) => href === pathname),
@@ -173,9 +199,13 @@ export function TodayFlow({ initial, children }: TodayFlowProps) {
           footerActions: <Button onClick={() => router.push(STEPS[1].href)}>Next</Button>,
         }
       : {
-          footerStart: nobodyPicked && (
+          footerStart: (
             <Text size="sm" c="textSecondary">
-              Pick at least one person to print.
+              {nobodyPicked
+                ? "Pick at least one person to print."
+                : unassigned === 0
+                  ? "All rooms assigned"
+                  : `${unassigned} ${unassigned === 1 ? "room" : "rooms"} unassigned`}
             </Text>
           ),
           footerActions: (
@@ -191,7 +221,7 @@ export function TodayFlow({ initial, children }: TodayFlowProps) {
         };
 
   return (
-    <TodayContext value={{ day, mode, setMode, toggleRoom, toggleStaff, confirmClear }}>
+    <TodayContext value={{ day, mode, setMode, toggleRoom, toggleStaff, confirmClear, assign }}>
       <FlowLayout {...footer}>
         {/* Completed steps are clickable and go back; later ones aren't */}
         <Stepper

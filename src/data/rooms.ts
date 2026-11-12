@@ -15,6 +15,12 @@ export type BedType = (typeof BED_TYPES)[number];
 
 export type Floor = 1 | 2;
 
+// Room sections on screen, in order
+export const FLOORS: readonly { floor: Floor; title: string }[] = [
+  { floor: 1, title: "100s" },
+  { floor: 2, title: "200s" },
+];
+
 export type Room = {
   number: number;
   bedType: BedType;

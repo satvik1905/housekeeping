@@ -1,0 +1,4 @@
+/* The dragged copy lets the pointer through, so drops find what's under it */
+.overlay {
+  pointer-events: none;
+}

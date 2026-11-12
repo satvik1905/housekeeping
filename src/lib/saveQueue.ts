@@ -8,9 +8,12 @@ export function createSaveQueue() {
   let barrier: Promise<void> = Promise.resolve();
 
   return {
-    run(key: string, task: () => Promise<void>): Promise<void> {
-      const next = (tails.get(key) ?? barrier).then(task);
-      tails.set(key, next);
+    // With several keys, the task waits for all of them, and later saves
+    // on any of them wait for it
+    run(keys: string | string[], task: () => Promise<void>): Promise<void> {
+      const list = typeof keys === "string" ? [keys] : keys;
+      const next = Promise.all(list.map((key) => tails.get(key) ?? barrier)).then(task);
+      for (const key of list) tails.set(key, next);
       return next;
     },
 
