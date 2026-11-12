@@ -6,7 +6,7 @@ type StickyBarProps = {
   children: ReactNode;
 };
 
-// Must be a direct child of Page so it stays stuck for the whole screen
+// Stays stuck while its parent (Page, or a SplitLayout column) is in view
 export function StickyBar({ children }: StickyBarProps) {
   return <Box className={classes.root}>{children}</Box>;
 }

@@ -6,6 +6,7 @@ import { modals } from "@mantine/modals";
 import { Page } from "@/components/layout/Page";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Section } from "@/components/layout/Section";
+import { SplitLayout } from "@/components/layout/SplitLayout";
 import { StickyBar } from "@/components/layout/StickyBar";
 import { ModeSwitch } from "@/components/ModeSwitch";
 import { RoomGrid } from "@/components/RoomGrid";
@@ -86,74 +87,87 @@ export default function Today() {
         title="Today"
         // Non-breaking space keeps the line's height until the date is known
         subtitle={today ? prettyDate(today) : "\u00a0"}
-        actions={
+      />
+
+      <SplitLayout
+        main={
           <>
-            <Button variant="default" onClick={confirmClear}>
-              Clear
-            </Button>
-            <Button disabled={nobodyPicked} onClick={() => window.print()}>
-              Print sheets
-            </Button>
+            <StickyBar>
+              <Stack gap="xs">
+                <Group gap="xs">
+                  <Text size="sm" c="textSecondary">
+                    Tap rooms to mark as
+                  </Text>
+                  <ModeSwitch value={mode} onChange={setMode} />
+                </Group>
+                <Text size="sm" c="textSecondary">
+                  Tap a room again to unmark it.
+                </Text>
+              </Stack>
+            </StickyBar>
+
+            {FLOORS.map(({ floor, title }) => (
+              <Section key={floor} title={title}>
+                <RoomGrid>
+                  {ROOMS.filter((room) => room.floor === floor).map((room) => (
+                    <RoomTile
+                      key={room.number}
+                      room={room}
+                      status={day.statuses[room.number]}
+                      onClick={() => toggleRoom(room.number)}
+                    />
+                  ))}
+                </RoomGrid>
+              </Section>
+            ))}
+          </>
+        }
+        panel={
+          <>
+            <Section title="Staff">
+              <Text size="sm" c="textSecondary">
+                Pick who&apos;s working today. Sheets print in the order you pick them.
+              </Text>
+              {ROLE_GROUPS.map(({ role, label }) => (
+                <Stack key={role} gap="xs">
+                  <Text size="sm" fw={600} c="textSecondary">
+                    {label}
+                  </Text>
+                  <Group gap="xs">
+                    {STAFF.filter((member) => member.role === role).map(({ name }) => {
+                      const index = day.staff.indexOf(name);
+                      return (
+                        <StaffChip
+                          key={name}
+                          name={name}
+                          pickNumber={index === -1 ? undefined : index + 1}
+                          onToggle={() => toggleStaff(name)}
+                        />
+                      );
+                    })}
+                  </Group>
+                </Stack>
+              ))}
+            </Section>
+
+            <Stack gap="xs">
+              {nobodyPicked && (
+                <Text size="sm" c="textSecondary">
+                  Pick at least one person to print.
+                </Text>
+              )}
+              <Group gap="xs">
+                <Button variant="default" onClick={confirmClear}>
+                  Clear
+                </Button>
+                <Button disabled={nobodyPicked} onClick={() => window.print()}>
+                  Print sheets
+                </Button>
+              </Group>
+            </Stack>
           </>
         }
       />
-
-      <StickyBar>
-        <Stack gap="xs">
-          <Group gap="xs">
-            <Text size="sm" c="textSecondary">
-              Tap rooms to mark as
-            </Text>
-            <ModeSwitch value={mode} onChange={setMode} />
-          </Group>
-          <Text size="sm" c="textSecondary">
-            Tap a room again to unmark it.
-          </Text>
-        </Stack>
-      </StickyBar>
-
-      <Section title="Staff">
-        <Text size="sm" c="textSecondary">
-          {nobodyPicked
-            ? "Pick at least one person to print."
-            : "Pick who's working today. Sheets print in the order you pick them."}
-        </Text>
-        {ROLE_GROUPS.map(({ role, label }) => (
-          <Stack key={role} gap="xs">
-            <Text size="sm" fw={600} c="textSecondary">
-              {label}
-            </Text>
-            <Group gap="xs">
-              {STAFF.filter((member) => member.role === role).map(({ name }) => {
-                const index = day.staff.indexOf(name);
-                return (
-                  <StaffChip
-                    key={name}
-                    name={name}
-                    pickNumber={index === -1 ? undefined : index + 1}
-                    onToggle={() => toggleStaff(name)}
-                  />
-                );
-              })}
-            </Group>
-          </Stack>
-        ))}
-      </Section>
-
-      {FLOORS.map(({ floor, title }) => (
-        <Section key={floor} title={title}>
-          <RoomGrid>
-            {ROOMS.filter((room) => room.floor === floor).map((room) => (
-              <RoomTile
-                key={room.number}
-                room={room}
-                status={day.statuses[room.number]}
-                onClick={() => toggleRoom(room.number)}
-              />
-            ))}
-          </RoomGrid>
-        </Section>
-      ))}
 
       {today && (
         <PrintSheets members={pickedMembers} date={today} statuses={day.statuses} />
