@@ -20,6 +20,11 @@
   --mode-border-color: var(--mantine-color-stayoverRoomService-filled);
 }
 
+/* Inactive labels: Mantine defaults them to gray.7 directly */
+.label {
+  color: var(--mantine-color-textSecondary-filled);
+}
+
 /* The indicator after hydration; the active label's ::before before it */
 .indicator,
 .label[data-active]::before {

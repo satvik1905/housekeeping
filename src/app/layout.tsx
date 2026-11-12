@@ -8,7 +8,7 @@ import {
 } from "@mantine/core";
 import { ModalsProvider } from "@mantine/modals";
 import { AppFrame } from "@/components/layout/AppFrame";
-import { theme } from "@/theme";
+import { cssVariablesResolver, theme } from "@/theme";
 
 export const metadata: Metadata = {
   title: "Monarch Housekeeping",
@@ -21,7 +21,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <ColorSchemeScript forceColorScheme="light" />
       </head>
       <body>
-        <MantineProvider theme={theme} forceColorScheme="light">
+        <MantineProvider
+          theme={theme}
+          cssVariablesResolver={cssVariablesResolver}
+          forceColorScheme="light"
+        >
           <ModalsProvider>
             <AppFrame>{children}</AppFrame>
           </ModalsProvider>

@@ -7,6 +7,7 @@ Every task in this repo must follow these rules.
 - Mantine components only. No Tailwind, no inline style props, no hardcoded colors.
 - Custom components (room tile, printed sheet) are built from Mantine primitives and take every color, radius and spacing value from the theme.
 - Light mode only.
+- All text must meet WCAG AA contrast (4.5:1) against its actual background, including the status tints on marked tiles. Secondary text uses one theme token, textSecondary. No other gray is used for text.
 - Exception: the printed sheet is a physical page. It uses the fixed pt/in sizes and sheet colors from reference/index.html, kept in its own stylesheet next to the component. Nothing else in the app may use them.
 
 ## Spacing

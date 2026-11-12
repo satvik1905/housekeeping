@@ -101,26 +101,26 @@ export default function Today() {
       <StickyBar>
         <Stack gap="xs">
           <Group gap="xs">
-            <Text size="sm" c="dimmed">
+            <Text size="sm" c="textSecondary">
               Tap rooms to mark as
             </Text>
             <ModeSwitch value={mode} onChange={setMode} />
           </Group>
-          <Text size="sm" c="dimmed">
+          <Text size="sm" c="textSecondary">
             Tap a room again to unmark it.
           </Text>
         </Stack>
       </StickyBar>
 
       <Section title="Staff">
-        <Text size="sm" c="dimmed">
+        <Text size="sm" c="textSecondary">
           {nobodyPicked
             ? "Pick at least one person to print."
             : "Pick who's working today. Sheets print in the order you pick them."}
         </Text>
         {ROLE_GROUPS.map(({ role, label }) => (
           <Stack key={role} gap="xs">
-            <Text size="sm" fw={600} c="dimmed">
+            <Text size="sm" fw={600} c="textSecondary">
               {label}
             </Text>
             <Group gap="xs">

@@ -23,7 +23,7 @@ export function RoomTile({ room, status, onClick }: RoomTileProps) {
       <Text size="xl" className={classes.number}>
         {room.number}
       </Text>
-      <Text size="xs" c="dimmed">
+      <Text size="xs" c="textSecondary">
         {room.bedType}
       </Text>
       {status && (

@@ -6,6 +6,8 @@ import {
   Chip,
   colorsTuple,
   createTheme,
+  CSSVariablesResolver,
+  DEFAULT_THEME,
   Input,
   NavLink,
   rem,
@@ -33,6 +35,9 @@ export const theme = createTheme({
     checkoutBg: colorsTuple("#F6E7E0"),
     stayoverBg: colorsTuple("#E2ECF5"),
     stayoverRoomServiceBg: colorsTuple("#ECE4F4"),
+    // Secondary text (CLAUDE.md: UI). Lightest Mantine gray at 4.5:1 on white
+    // and on every status tint: gray.7, 6.61:1 at worst (stayoverRoomServiceBg)
+    textSecondary: colorsTuple(DEFAULT_THEME.colors.gray[7]),
   },
   primaryColor: "navy",
   primaryShade: 9,
@@ -82,4 +87,11 @@ export const theme = createTheme({
       },
     }),
   },
+});
+
+// Mantine's built-in secondary text (dimmed) uses textSecondary too
+export const cssVariablesResolver: CSSVariablesResolver = () => ({
+  variables: {},
+  light: { "--mantine-color-dimmed": "var(--mantine-color-textSecondary-filled)" },
+  dark: {},
 });
