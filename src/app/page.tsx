@@ -16,6 +16,14 @@ import type { RoomStatus } from "@/data/status";
 import { useToday } from "@/hooks/useToday";
 import { prettyDate } from "@/lib/date";
 
+// Everything that belongs to one day. A new Pacific date starts empty.
+type DayState = {
+  date: string | null;
+  statuses: Partial<Record<number, RoomStatus>>;
+};
+
+const emptyDay = (date: string | null): DayState => ({ date, statuses: {} });
+
 const FLOORS: { floor: Floor; title: string }[] = [
   { floor: 1, title: "100s" },
   { floor: 2, title: "200s" },
@@ -25,16 +33,22 @@ export default function Today() {
   const today = useToday();
   const [mode, setMode] = useState<RoomStatus>("checkout");
   // In memory only for now
-  const [statuses, setStatuses] = useState<Partial<Record<number, RoomStatus>>>({});
+  const [day, setDay] = useState(() => emptyDay(today));
+
+  // The date changed (midnight, or the tablet woke up on a new day): reset.
+  // The first date after hydration just fills in; nothing was marked yet.
+  if (today !== day.date) {
+    setDay(day.date === null ? { ...day, date: today } : emptyDay(today));
+  }
 
   // Same as the reference: tapping a room already in the current mode
   // unmarks it; otherwise it's set to the current mode.
   const toggleRoom = (number: number) => {
-    setStatuses((current) => {
-      const next = { ...current };
-      if (next[number] === mode) delete next[number];
-      else next[number] = mode;
-      return next;
+    setDay((current) => {
+      const statuses = { ...current.statuses };
+      if (statuses[number] === mode) delete statuses[number];
+      else statuses[number] = mode;
+      return { ...current, statuses };
     });
   };
 
@@ -45,7 +59,7 @@ export default function Today() {
       confirmProps: { color: "red" },
       // Like the reference's confirm(): no close button (it'd be under 44px)
       withCloseButton: false,
-      onConfirm: () => setStatuses({}),
+      onConfirm: () => setDay((current) => emptyDay(current.date)),
     });
 
   return (
@@ -82,7 +96,7 @@ export default function Today() {
               <RoomTile
                 key={room.number}
                 room={room}
-                status={statuses[room.number]}
+                status={day.statuses[room.number]}
                 onClick={() => toggleRoom(room.number)}
               />
             ))}
