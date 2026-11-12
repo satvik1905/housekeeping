@@ -15,6 +15,13 @@
       "when": 1794514629519,
       "tag": "0001_natural_ravenous",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794518432077,
+      "tag": "0002_tired_hannibal_king",
+      "breakpoints": true
     }
   ]
 }

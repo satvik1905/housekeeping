@@ -3,6 +3,7 @@ import {
   boolean,
   check,
   date,
+  foreignKey,
   integer,
   pgEnum,
   pgTable,
@@ -63,4 +64,40 @@ export const authLockout = pgTable(
     lockedUntil: timestamp("locked_until", { withTimezone: true }),
   },
   (table) => [check("auth_lockout_single_row", sql`${table.id} = 1`)],
+);
+
+// Which housekeeper cleans each marked room. Composite foreign keys make
+// the database itself drop an assignment when its room is unmarked or its
+// housekeeper is unpicked (and so when a day is cleared).
+export const roomAssignments = pgTable(
+  "room_assignments",
+  {
+    date: date("date", { mode: "string" }).notNull(),
+    roomNumber: integer("room_number").notNull(),
+    staffId: integer("staff_id").notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.date, table.roomNumber] }),
+    foreignKey({
+      columns: [table.date, table.roomNumber],
+      foreignColumns: [roomMarks.date, roomMarks.roomNumber],
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [table.date, table.staffId],
+      foreignColumns: [dayStaff.date, dayStaff.staffId],
+    }).onDelete("cascade"),
+  ],
+);
+
+// The latest time each person's sheet was printed, per day
+export const sheetPrints = pgTable(
+  "sheet_prints",
+  {
+    date: date("date", { mode: "string" }).notNull(),
+    staffId: integer("staff_id")
+      .notNull()
+      .references(() => staff.id),
+    printedAt: timestamp("printed_at", { withTimezone: true }).notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.date, table.staffId] })],
 );

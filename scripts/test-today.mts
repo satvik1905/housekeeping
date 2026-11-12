@@ -6,7 +6,9 @@ process.loadEnvFile(".env.local");
 if (process.env.NEON_BRANCH !== "dev") {
   throw new Error(`Refusing to run: .env.local points at "${process.env.NEON_BRANCH}", not dev`);
 }
-const { getToday, setMark, togglePick, clearDay } = await import("../src/server/todayData");
+const { getToday, setMark, togglePick, clearDay, assignRoom, markPrinted } = await import(
+  "../src/server/todayData"
+);
 const { neon } = await import("@neondatabase/serverless");
 const raw = neon(process.env.DATABASE_URL!);
 let pass = 0, fail = 0;
@@ -110,15 +112,85 @@ check("garbage date -> dayChanged", !r4.ok && r4.error === "dayChanged", r4);
 const after = { marks: await raw`select count(*)::int n from room_marks`, picks: await raw`select count(*)::int n from day_staff` };
 check("stale writes changed nothing", JSON.stringify(before) === JSON.stringify(after), after);
 
+// Room assignments. Picks now: 3 Mabel, 8 Jose (laundry), 5 Peya
+const assigned = async (d: string) =>
+  (await raw`select room_number, staff_id from room_assignments where date = ${d} order by room_number`)
+    .map((r) => `${r.room_number}:${r.staff_id}`)
+    .join(" ");
+check("picks before assignments", (await picksOf(date)) === "3:1 8:2 5:3", await picksOf(date));
+await setMark(date, 101, "checkout");
+await setMark(date, 102, "stayover");
+await setMark(date, 104, "stayoverRoomService");
+check("assign 101 -> Mabel", (await assignRoom(date, 101, 3)).ok);
+check("assign 102 -> Mabel", (await assignRoom(date, 102, 3)).ok);
+check("assign 104 -> Peya", (await assignRoom(date, 104, 5)).ok);
+check("assignments saved", (await assigned(date)) === "101:3 102:3 104:5", await assigned(date));
+check("move 101 Mabel -> Peya", (await assignRoom(date, 101, 5)).ok);
+check("moved (one row per room)", (await assigned(date)) === "101:5 102:3 104:5", await assigned(date));
+check("unassign 102", (await assignRoom(date, 102, null)).ok);
+check("unassigned", (await assigned(date)) === "101:5 104:5", await assigned(date));
+check("unassign an unassigned room is ok", (await assignRoom(date, 102, null)).ok);
+t = await getToday();
+check("getToday returns assignments", JSON.stringify(t.assignments) === JSON.stringify({ 101: 5, 104: 5 }), t.assignments);
+
+await throws("assign unmarked room 105 rejected", () => assignRoom(date, 105, 3), /Room 105 isn't marked/);
+await throws("assign to laundry (Jose) rejected", () => assignRoom(date, 102, 8), /Staff member 8 isn't a housekeeper/);
+await throws("assign to unpicked housekeeper (Maria) rejected", () => assignRoom(date, 102, 1), /Staff member 1 isn't picked/);
+await throws("assign room 103 (doesn't exist) rejected", () => assignRoom(date, 103, 3), /No room 103/);
+await throws("assign non-integer staff rejected", () => assignRoom(date, 102, 2.5), /Invalid staff id/);
+check("rejections wrote nothing", (await assigned(date)) === "101:5 104:5", await assigned(date));
+const rs = await assignRoom(stale, 101, 3);
+check("stale assignRoom -> dayChanged", !rs.ok && rs.error === "dayChanged", rs);
+
+// Cascade 1: unmarking a room deletes its assignment; changing its status keeps it
+await setMark(date, 104, "checkout");
+check("status change keeps assignment", (await assigned(date)) === "101:5 104:5", await assigned(date));
+await setMark(date, 101, null);
+check("unmark 101 deletes its assignment only", (await assigned(date)) === "104:5", await assigned(date));
+// Cascade 2: unpicking a person deletes their assignments
+await setMark(date, 101, "checkout");
+await assignRoom(date, 101, 3);
+await assignRoom(date, 102, 3);
+check("setup: Mabel 101+102, Peya 104", (await assigned(date)) === "101:3 102:3 104:5", await assigned(date));
+await togglePick(date, 3);
+check("unpick Mabel deletes her assignments only", (await assigned(date)) === "104:5", await assigned(date));
+check("unpick still renumbers", (await picksOf(date)) === "8:1 5:2", await picksOf(date));
+await togglePick(date, 3);
+
+// Print records
+const printsOf = async (d: string) =>
+  Object.fromEntries((await raw`select staff_id, printed_at from sheet_prints where date = ${d}`).map((r) => [r.staff_id, new Date(r.printed_at).getTime()]));
+const t1 = Date.now();
+check("markPrinted Peya + Jose", (await markPrinted(date, [5, 8])).ok);
+const p1 = await printsOf(date);
+check("print rows recorded at ~now", Object.keys(p1).sort().join() === "5,8" && Math.abs(p1[5] - t1) < 60_000, p1);
+await new Promise((r) => setTimeout(r, 1100));
+check("markPrinted Peya again", (await markPrinted(date, [5])).ok);
+const p2 = await printsOf(date);
+check("reprint replaces Peya's time, keeps Jose's", p2[5] > p1[5] && p2[8] === p1[8] && Object.keys(p2).length === 2);
+check("markPrinted [] is a no-op", (await markPrinted(date, [])).ok);
+await throws("markPrinted unknown staff rejected", () => markPrinted(date, [99]), /Unknown staff id/);
+const rp = await markPrinted(stale, [5]);
+check("stale markPrinted -> dayChanged", !rp.ok && rp.error === "dayChanged", rp);
+t = await getToday();
+check("getToday returns print times", t.prints[5] instanceof Date && t.prints[5].getTime() === p2[5] && t.prints[8] !== undefined, t.prints);
+
+// Cascade 3: clearDay deletes assignments and print records (another date's survive)
+await raw`insert into day_staff values (${stale}, 5, 1)`;
+await raw`insert into sheet_prints values (${stale}, 5, now())`;
 // another date's rows survive clearDay
 await raw`insert into room_marks values (${stale}, 101, 'checkout')`;
 check("clearDay today", (await clearDay(date)).ok);
 t = await getToday();
 check("today empty after clearDay", Object.keys(t.marks).length === 0 && t.picks.length === 0);
+check("clearDay deleted assignments and prints", (await assigned(date)) === "" && Object.keys(await printsOf(date)).length === 0 && Object.keys(t.assignments).length === 0 && Object.keys(t.prints).length === 0);
+check("clearDay left another date's prints alone", Object.keys(await printsOf(stale)).length === 1);
 const other = await raw`select count(*)::int n from room_marks where date = ${stale}`;
 check("clearDay left other dates alone", other[0].n === 1);
 await raw`delete from room_marks where date = ${stale}`;
-const left = await raw`select (select count(*) from room_marks)::int m, (select count(*) from day_staff)::int p, (select count(*) from staff where active)::int s`;
+await raw`delete from sheet_prints where date = ${stale}`;
+await raw`delete from day_staff where date = ${stale}`;
+const left = await raw`select (select count(*) from room_marks)::int m, (select count(*) from day_staff)::int p, (select count(*) from room_assignments)::int a, (select count(*) from sheet_prints)::int pr, (select count(*) from staff where active)::int s`;
 console.log("cleanup:", left[0]);
 console.log(`\n${pass} passed, ${fail} failed`);
 if (fail > 0) process.exitCode = 1;

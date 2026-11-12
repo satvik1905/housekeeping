@@ -36,3 +36,17 @@ export async function clearDay(date: string): Promise<WriteResult> {
   await requireSession();
   return data.clearDay(date);
 }
+
+export async function assignRoom(
+  date: string,
+  roomNumber: number,
+  staffId: number | null,
+): Promise<WriteResult> {
+  await requireSession();
+  return data.assignRoom(date, roomNumber, staffId);
+}
+
+export async function markPrinted(date: string, staffIds: number[]): Promise<WriteResult> {
+  await requireSession();
+  return data.markPrinted(date, staffIds);
+}
