@@ -1,10 +1,10 @@
-import { Page } from "@/components/layout/Page";
+import { CenteredCard } from "@/components/layout/CenteredCard";
 import { PinForm } from "./PinForm";
 
 export default function Login() {
   return (
-    <Page>
+    <CenteredCard>
       <PinForm />
-    </Page>
+    </CenteredCard>
   );
 }

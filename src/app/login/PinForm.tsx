@@ -2,8 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { PinInput, Stack, Text } from "@mantine/core";
+import { Image, PinInput, rem, Stack, Text, Title } from "@mantine/core";
 import { verifyPin } from "@/server/auth";
+import classes from "./PinForm.module.css";
 
 const MESSAGES = {
   wrongPin: "Wrong PIN.",
@@ -58,10 +59,14 @@ export function PinForm() {
   };
 
   return (
-    <Stack align="center" gap="xs">
+    <Stack align="center" gap="md">
+      <Image src="/monarch-logo.png" alt="" w={rem(200)} />
+      <Title order={3}>Enter PIN</Title>
       <PinInput
         length={6}
+        size="lg"
         type="number"
+        mask
         oneTimeCode={false}
         ariaLabel="PIN"
         value={pin}
@@ -70,7 +75,9 @@ export function PinForm() {
         error={error !== null}
         disabled={lockedUntil !== null}
       />
-      {error && <Text role="alert">{MESSAGES[error]}</Text>}
+      <Text className={classes.message} role="alert">
+        {error && MESSAGES[error]}
+      </Text>
     </Stack>
   );
 }

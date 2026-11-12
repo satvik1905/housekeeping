@@ -1,0 +1,5 @@
+/* Room for the longest message (two lines), so the card doesn't jump */
+.message {
+  height: calc(2em * var(--mantine-line-height));
+  text-align: center;
+}

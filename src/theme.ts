@@ -78,9 +78,13 @@ export const theme = createTheme({
     Input: Input.extend({
       styles: { input: { minHeight: TOUCH_TARGET } },
     }),
-    // Each box is one touch target square
+    // Boxes keep their size prop, but are never smaller than a touch target
     PinInput: PinInput.extend({
-      vars: () => ({ root: { "--pin-input-size": TOUCH_TARGET } }),
+      vars: (_theme, props) => ({
+        root: {
+          "--pin-input-size": `max(${TOUCH_TARGET}, var(--pin-input-size-${props.size ?? "sm"}))`,
+        },
+      }),
     }),
     NavLink: NavLink.extend({
       styles: {
