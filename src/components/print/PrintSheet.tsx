@@ -24,16 +24,19 @@ type PrintSheetProps = {
   // Pacific date, YYYY-MM-DD
   date: string;
   statuses: RoomStatuses;
+  // Rooms shaded as this person's (a housekeeper's assigned rooms); none
+  // for the general sheet
+  assigned?: ReadonlySet<number>;
 };
 
 // One person's sheet: two pages, floor 1 (with the reminder and
 // checklist) then floor 2, exactly as in the reference. Same layout for
 // every role; only the name field label differs (CLAUDE.md, Domain rules).
-export function PrintSheet({ member, date, statuses }: PrintSheetProps) {
+export function PrintSheet(props: PrintSheetProps) {
   return (
     <>
-      <SheetPage member={member} date={date} statuses={statuses} floor={1} withChecklist />
-      <SheetPage member={member} date={date} statuses={statuses} floor={2} />
+      <SheetPage {...props} floor={1} withChecklist />
+      <SheetPage {...props} floor={2} />
     </>
   );
 }
@@ -43,7 +46,7 @@ type SheetPageProps = PrintSheetProps & {
   withChecklist?: boolean;
 };
 
-function SheetPage({ member, date, statuses, floor, withChecklist }: SheetPageProps) {
+function SheetPage({ member, date, statuses, assigned, floor, withChecklist }: SheetPageProps) {
   const nameLabel = member.role === "housekeeper" ? "HOUSEKEEPER" : "NAME";
 
   return (
@@ -79,7 +82,12 @@ function SheetPage({ member, date, statuses, floor, withChecklist }: SheetPagePr
         </thead>
         <tbody>
           {ROOMS.filter((room) => room.floor === floor).map((room) => (
-            <SheetRow key={room.number} room={room} status={statuses[room.number]} />
+            <SheetRow
+              key={room.number}
+              room={room}
+              status={statuses[room.number]}
+              assigned={assigned?.has(room.number) ?? false}
+            />
           ))}
         </tbody>
       </Box>
@@ -109,15 +117,16 @@ function SheetPage({ member, date, statuses, floor, withChecklist }: SheetPagePr
 type SheetRowProps = {
   room: Room;
   status: RoomStatuses[number];
+  assigned: boolean;
 };
 
 // C/O gets ✗; S/O gets ○ for both stayover kinds; room service is noted
 // in Comment, as in the reference
-function SheetRow({ room, status }: SheetRowProps) {
+function SheetRow({ room, status, assigned }: SheetRowProps) {
   const isStayover = status === "stayover" || status === "stayoverRoomService";
 
   return (
-    <tr>
+    <tr className={assigned ? classes.assigned : undefined}>
       <td className={classes.number}>{room.number}</td>
       <td className={classes.bedType}>{room.bedType}</td>
       <td className={classes.mark}>{status === "checkout" ? "✗" : ""}</td>

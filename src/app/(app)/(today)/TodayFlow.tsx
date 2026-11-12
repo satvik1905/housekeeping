@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { createContext, use, useCallback, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { usePathname, useRouter } from "next/navigation";
 import { Button, Stepper, Text } from "@mantine/core";
 import { useMounted } from "@mantine/hooks";
@@ -14,7 +15,7 @@ import type { RoomStatus } from "@/data/status";
 import { useDayRefresh } from "@/hooks/useDayRefresh";
 import { prettyDate } from "@/lib/date";
 import { createSaveQueue } from "@/lib/saveQueue";
-import { assignRoom, clearDay, getToday, setMark, togglePick } from "@/server/today";
+import { assignRoom, clearDay, getToday, markPrinted, setMark, togglePick } from "@/server/today";
 import type { Today, TodayStaff, WriteResult } from "@/server/todayData";
 
 // The flow's steps, in order
@@ -43,9 +44,15 @@ type TodayContextValue = {
   toggleRoom: (number: number) => void;
   toggleStaff: (member: TodayStaff) => void;
   confirmClear: () => void;
-  // Assign a room to a housekeeper, or unassign it (null)
-  assign: (roomNumber: number, staffId: number | null) => void;
+  // One drag's assignment changes: each room to a housekeeper, or
+  // unassigned (null)
+  assign: (changes: AssignmentChange[]) => void;
 };
+
+export type AssignmentChange = { roomNumber: number; staffId: number | null };
+
+// One room's assignment before and after a change
+type RoomMove = { roomNumber: number; from: number | null; to: number | null };
 
 const TodayContext = createContext<TodayContextValue | null>(null);
 
@@ -92,25 +99,29 @@ export function TodayFlow({ initial, children }: TodayFlowProps) {
   // Queue one save. On failure the screen keeps the tap, unless
   // reloadOnFail (then it's reset from the database). If the day changed,
   // reload today. Reloads aren't awaited: reload waits for this save.
+  // Resolves to whether the save succeeded.
   const save = (
     key: string | string[],
     write: () => Promise<WriteResult>,
     { reloadOnFail = false } = {},
-  ) => {
+  ): Promise<boolean> => {
     taps.current++;
+    let saved = false;
     const task = async () => {
       try {
         const result = await write();
         if (!result.ok) {
           void reload();
           showDayChanged();
+        } else {
+          saved = true;
         }
       } catch {
         if (reloadOnFail) void reload();
         showSaveFailed();
       }
     };
-    void (key === "clear" ? queue.runAlone(task) : queue.run(key, task));
+    return (key === "clear" ? queue.runAlone(task) : queue.run(key, task)).then(() => saved);
   };
 
   // Same as the reference: tapping a room already in the current mode
@@ -166,19 +177,89 @@ export function TodayFlow({ initial, children }: TodayFlowProps) {
       },
     });
 
-  // Saved in the room's queue, after any pending pick saves (assigning
-  // needs the person picked). A failed or rejected save (say the room was
-  // just unmarked elsewhere) resets the screen from the database.
-  const assign = (roomNumber: number, staffId: number | null) => {
-    if ((day.assignments[roomNumber] ?? null) === staffId) return;
+  // Who's on the printed sheets right now; null prints everyone picked
+  const [printing, setPrinting] = useState<TodayStaff[] | null>(null);
+
+  // Print these people's sheets (everyone picked by default) and record
+  // the print. The sheets are rendered before the dialog opens.
+  const printSheets = (members: TodayStaff[] = day.picks) => {
+    const ids = members.map((member) => member.id);
+    const now = new Date();
+    setDay((current) => {
+      const prints = { ...current.prints };
+      for (const id of ids) prints[id] = now;
+      return { ...current, prints };
+    });
+    void save("prints", () => markPrinted(day.date, ids));
+    flushSync(() => setPrinting(members));
+    window.print();
+    setPrinting(null);
+  };
+
+  // Each room saves in its own queue, after any pending pick saves
+  // (assigning needs the person picked). A failed or rejected save (say
+  // the room was just unmarked elsewhere) resets the screen from the
+  // database. Once every save succeeds, if anyone affected already has a
+  // printed sheet today, offer to reprint it.
+  const assign = (changes: AssignmentChange[]) => {
+    const moves = changes
+      .map(({ roomNumber, staffId }) => ({
+        roomNumber,
+        from: day.assignments[roomNumber] ?? null,
+        to: staffId,
+      }))
+      .filter(({ from, to }) => from !== to);
+    if (moves.length === 0) return;
+
     setDay((current) => {
       const assignments = { ...current.assignments };
-      if (staffId === null) delete assignments[roomNumber];
-      else assignments[roomNumber] = staffId;
+      for (const { roomNumber, to } of moves) {
+        if (to === null) delete assignments[roomNumber];
+        else assignments[roomNumber] = to;
+      }
       return { ...current, assignments };
     });
-    save([`room:${roomNumber}`, "picks"], () => assignRoom(day.date, roomNumber, staffId), {
-      reloadOnFail: true,
+
+    const saves = moves.map(({ roomNumber, to }) =>
+      save([`room:${roomNumber}`, "picks"], () => assignRoom(day.date, roomNumber, to), {
+        reloadOnFail: true,
+      }),
+    );
+    const printedBefore = day.prints;
+    void Promise.all(saves).then((results) => {
+      if (results.every(Boolean)) offerReprint(moves, printedBefore);
+    });
+  };
+
+  const offerReprint = (moves: RoomMove[], printed: Today["prints"]) => {
+    const people = new Map([...day.staff, ...day.picks].map((member) => [member.id, member]));
+    const named = [
+      ...new Set(moves.flatMap(({ from, to }) => [from, to]).filter((id) => id !== null)),
+    ];
+    const outdated = named.filter((id) => printed[id] !== undefined);
+    if (outdated.length === 0) return;
+
+    const name = (id: number) => people.get(id)?.name ?? "";
+    const lines = moves.map(({ roomNumber, from, to }) =>
+      from === null
+        ? `Room ${roomNumber} assigned to ${name(to!)}.`
+        : to === null
+          ? `Room ${roomNumber} unassigned from ${name(from)}.`
+          : `Room ${roomNumber} moved from ${name(from)} to ${name(to)}.`,
+    );
+    const outdatedNames = outdated.map(name);
+    const sheets =
+      outdated.length === named.length && named.length > 1
+        ? "Their printed sheets are out of date."
+        : outdated.length === 1
+          ? `${outdatedNames[0]}'s printed sheet is out of date.`
+          : `${outdatedNames.join(" and ")}'s printed sheets are out of date.`;
+
+    modals.openConfirmModal({
+      children: <Text>{[...lines, sheets].join(" ")}</Text>,
+      labels: { confirm: "Reprint", cancel: "Close" },
+      withCloseButton: false,
+      onConfirm: () => printSheets(outdated.map((id) => people.get(id)!)),
     });
   };
 
@@ -213,7 +294,7 @@ export function TodayFlow({ initial, children }: TodayFlowProps) {
               <Button variant="default" onClick={() => router.push(STEPS[0].href)}>
                 Back
               </Button>
-              <Button disabled={nobodyPicked} onClick={() => window.print()}>
+              <Button disabled={nobodyPicked} onClick={() => printSheets()}>
                 Print sheets
               </Button>
             </>
@@ -238,7 +319,14 @@ export function TodayFlow({ initial, children }: TodayFlowProps) {
       </FlowLayout>
 
       {/* PrintSheets renders into <body>, so only once on the client */}
-      {mounted && <PrintSheets members={day.picks} date={day.date} statuses={day.marks} />}
+      {mounted && (
+        <PrintSheets
+          members={printing ?? day.picks}
+          date={day.date}
+          statuses={day.marks}
+          assignments={day.assignments}
+        />
+      )}
     </TodayContext>
   );
 }

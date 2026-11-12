@@ -127,6 +127,12 @@
   background: #faf9f6;
 }
 
+/* A housekeeper's assigned rooms, on their own sheet: navy.2 from the
+   theme palette, clearly darker and bluer than the zebra and header */
+.table tr.assigned td {
+  background: #c6c9d1;
+}
+
 .table tr:last-child td {
   border-bottom: 0.9pt solid #1f1f1f;
 }

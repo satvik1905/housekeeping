@@ -25,6 +25,7 @@ import type { Room } from "@/data/rooms";
 import { FLOORS, ROOMS } from "@/data/rooms";
 import type { RoomStatus } from "@/data/status";
 import type { TodayStaff } from "@/server/todayData";
+import type { AssignmentChange } from "../TodayFlow";
 import { useTodayFlow } from "../TodayFlow";
 import classes from "./page.module.css";
 
@@ -79,8 +80,10 @@ export default function AssignStep() {
     const { staffId, fromRoom } = active.data.current as DragItem;
     const target = over ? Number(over.id) : null;
     if (target === fromRoom) return;
-    if (target !== null) assign(target, staffId);
-    if (fromRoom !== undefined) assign(fromRoom, null);
+    const changes: AssignmentChange[] = [];
+    if (target !== null) changes.push({ roomNumber: target, staffId });
+    if (fromRoom !== undefined) changes.push({ roomNumber: fromRoom, staffId: null });
+    assign(changes);
   };
 
   return (
