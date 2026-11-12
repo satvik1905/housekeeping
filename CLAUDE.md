@@ -32,3 +32,11 @@ Use theme tokens only, never raw px.
 
 - `reference/index.html` holds the current rooms, bed types, staff, checklist, sheet layout and behaviors. Port from it; don't reinvent.
 - Never introduce a value, behavior or copy that isn't specified. If something is missing, stop and ask.
+
+## Domain rules
+
+- Staff roles: housekeeper, laundry, maintenance. Everyone working is picked daily.
+- Only housekeepers can be assigned rooms. Only housekeepers count in analytics.
+- Laundry and maintenance always get the plain sheet: all 55 rooms, C/O ✗, S/O ○, "Room Service" in Comment, no shading. This is the same as "Print as is".
+- Every sheet gets the checklist and the 40-minute reminder, whatever the role.
+- Sheet name field label: "HOUSEKEEPER" for housekeepers, "NAME" for laundry and maintenance.
