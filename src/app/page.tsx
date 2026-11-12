@@ -8,10 +8,21 @@ import { Section } from "@/components/layout/Section";
 import { StickyBar } from "@/components/layout/StickyBar";
 import { RoomGrid } from "@/components/RoomGrid";
 import { RoomTile } from "@/components/RoomTile";
+import { StatusDot } from "@/components/StatusDot";
 import type { Floor } from "@/data/rooms";
 import { ROOMS } from "@/data/rooms";
 import type { RoomStatus } from "@/data/status";
 import { STATUSES } from "@/data/status";
+
+const MODE_OPTIONS = STATUSES.map(({ value, label }) => ({
+  value,
+  label: (
+    <Group gap="xs" justify="center" wrap="nowrap">
+      <StatusDot status={value} />
+      {label}
+    </Group>
+  ),
+}));
 
 const FLOORS: { floor: Floor; title: string }[] = [
   { floor: 1, title: "100s" },
@@ -45,7 +56,7 @@ export default function Today() {
               Tap rooms to mark as
             </Text>
             <SegmentedControl
-              data={STATUSES}
+              data={MODE_OPTIONS}
               value={mode}
               onChange={(value) => setMode(value as RoomStatus)}
               color={mode}
