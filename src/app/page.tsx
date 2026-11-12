@@ -10,8 +10,10 @@ import { StickyBar } from "@/components/layout/StickyBar";
 import { ModeSwitch } from "@/components/ModeSwitch";
 import { RoomGrid } from "@/components/RoomGrid";
 import { RoomTile } from "@/components/RoomTile";
+import { StaffChip } from "@/components/StaffChip";
 import type { Floor } from "@/data/rooms";
 import { ROOMS } from "@/data/rooms";
+import { ROLE_GROUPS, STAFF } from "@/data/staff";
 import type { RoomStatus } from "@/data/status";
 import { useToday } from "@/hooks/useToday";
 import { prettyDate } from "@/lib/date";
@@ -20,9 +22,15 @@ import { prettyDate } from "@/lib/date";
 type DayState = {
   date: string | null;
   statuses: Partial<Record<number, RoomStatus>>;
+  // Names of picked staff, in the order picked
+  staff: string[];
 };
 
-const emptyDay = (date: string | null): DayState => ({ date, statuses: {} });
+const emptyDay = (date: string | null): DayState => ({
+  date,
+  statuses: {},
+  staff: [],
+});
 
 const FLOORS: { floor: Floor; title: string }[] = [
   { floor: 1, title: "100s" },
@@ -50,6 +58,16 @@ export default function Today() {
       else statuses[number] = mode;
       return { ...current, statuses };
     });
+  };
+
+  // Same as the reference: tap to pick (added to the end), tap again to unpick
+  const toggleStaff = (name: string) => {
+    setDay((current) => ({
+      ...current,
+      staff: current.staff.includes(name)
+        ? current.staff.filter((picked) => picked !== name)
+        : [...current.staff, name],
+    }));
   };
 
   const confirmClear = () =>
@@ -88,6 +106,32 @@ export default function Today() {
           </Text>
         </Stack>
       </StickyBar>
+
+      <Section title="Staff">
+        <Text size="sm" c="dimmed">
+          Pick who&apos;s working today. Sheets print in the order you pick them.
+        </Text>
+        {ROLE_GROUPS.map(({ role, label }) => (
+          <Stack key={role} gap="xs">
+            <Text size="sm" fw={600} c="dimmed">
+              {label}
+            </Text>
+            <Group gap="xs">
+              {STAFF.filter((member) => member.role === role).map(({ name }) => {
+                const index = day.staff.indexOf(name);
+                return (
+                  <StaffChip
+                    key={name}
+                    name={name}
+                    pickNumber={index === -1 ? undefined : index + 1}
+                    onToggle={() => toggleStaff(name)}
+                  />
+                );
+              })}
+            </Group>
+          </Stack>
+        ))}
+      </Section>
 
       {FLOORS.map(({ floor, title }) => (
         <Section key={floor} title={title}>

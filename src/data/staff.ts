@@ -22,3 +22,10 @@ export const STAFF: readonly StaffMember[] = [
 export function getHousekeepers(): StaffMember[] {
   return STAFF.filter((member) => member.role === "housekeeper");
 }
+
+// Staff picker groups on the Today screen, in display order
+export const ROLE_GROUPS: readonly { role: StaffRole; label: string }[] = [
+  { role: "housekeeper", label: "Housekeepers" },
+  { role: "laundry", label: "Laundry" },
+  { role: "maintenance", label: "Maintenance" },
+];

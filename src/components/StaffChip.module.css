@@ -1,0 +1,27 @@
+/* Ported from reference/index.html (.chip, .chip .order) */
+
+/* Picked: primary border doubled with an inset ring, as in the reference */
+.label[data-checked] {
+  box-shadow: inset 0 0 0 1px var(--mantine-primary-color-filled);
+}
+
+/* Room for the pick number instead of Mantine's small check icon */
+.iconWrapper {
+  width: auto;
+  max-width: none;
+  height: auto;
+  margin-inline-end: var(--mantine-spacing-xs);
+}
+
+.number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: rem(22px);
+  height: rem(22px);
+  border-radius: 50%;
+  background-color: var(--mantine-primary-color-filled);
+  color: var(--mantine-color-white);
+  font-size: var(--mantine-font-size-xs);
+  font-weight: 700;
+}
