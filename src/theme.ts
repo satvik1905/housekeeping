@@ -69,7 +69,13 @@ export const theme = createTheme({
       styles: { input: { minHeight: TOUCH_TARGET } },
     }),
     NavLink: NavLink.extend({
-      styles: { root: { minHeight: TOUCH_TARGET } },
+      styles: {
+        root: {
+          minHeight: TOUCH_TARGET,
+          // NavLink has no radius prop; use the theme's defaultRadius
+          borderRadius: "var(--mantine-radius-default)",
+        },
+      },
     }),
   },
 });
