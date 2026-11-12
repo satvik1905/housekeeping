@@ -8,6 +8,7 @@ import { ModeSwitch } from "@/components/ModeSwitch";
 import { RoomGrid } from "@/components/RoomGrid";
 import { RoomTile } from "@/components/RoomTile";
 import { StaffChip } from "@/components/StaffChip";
+import { StatusCounts } from "@/components/StatusCounts";
 import type { Floor } from "@/data/rooms";
 import { ROOMS } from "@/data/rooms";
 import { ROLE_GROUPS } from "@/data/staff";
@@ -27,17 +28,13 @@ export default function RoomsStep() {
       main={
         <>
           <StickyBar>
-            <Stack gap="xs">
-              <Group gap="xs">
-                <Text size="sm" c="textSecondary">
-                  Tap rooms to mark as
-                </Text>
-                <ModeSwitch value={mode} onChange={setMode} />
-              </Group>
+            <Group gap="xs">
               <Text size="sm" c="textSecondary">
-                Tap a room again to unmark it.
+                Tap rooms to mark as
               </Text>
-            </Stack>
+              <ModeSwitch value={mode} onChange={setMode} />
+              <StatusCounts marks={day.marks} />
+            </Group>
           </StickyBar>
 
           {FLOORS.map(({ floor, title }) => (
