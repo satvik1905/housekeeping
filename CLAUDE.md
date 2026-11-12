@@ -38,5 +38,6 @@ Use theme tokens only, never raw px.
 - Staff roles: housekeeper, laundry, maintenance. Everyone working is picked daily.
 - Only housekeepers can be assigned rooms. Only housekeepers count in analytics.
 - Laundry and maintenance always get the plain sheet: all 55 rooms, C/O ✗, S/O ○, "Room Service" in Comment, no shading. This is the same as "Print as is".
-- Every sheet gets the checklist and the 40-minute reminder, whatever the role.
+- Until the Assign phase is built there is one print button, 'Print sheets', behaving exactly as in the reference. The two-path choice ('Print as is' vs 'Assign rooms') will be specified when Assign is built. Don't build it before then.
+- Each person's sheet is two pages: floor 1 with the reminder and checklist, then floor 2 without them, exactly as in the reference. This applies to every role.
 - Sheet name field label: "HOUSEKEEPER" for housekeepers, "NAME" for laundry and maintenance.
