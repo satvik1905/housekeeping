@@ -33,6 +33,22 @@ export function msUntilMidnight(now = new Date()): number {
   return 24 * 60 * 60 * 1000 - elapsed;
 }
 
+// The real instant of the next Pacific midnight. Midnight is 07:00 UTC
+// under daylight time and 08:00 UTC under standard time.
+export function nextMidnight(now = new Date()): Date {
+  const { year, month, day } = pacificParts(now);
+  // Noon UTC on tomorrow's Pacific date, whatever the month length
+  const tomorrow = new Date(Date.UTC(year, month - 1, day + 1, 12));
+  for (const utcHour of [7, 8]) {
+    const candidate = new Date(
+      Date.UTC(tomorrow.getUTCFullYear(), tomorrow.getUTCMonth(), tomorrow.getUTCDate(), utcHour),
+    );
+    const parts = pacificParts(candidate);
+    if (parts.hour === 0 && parts.minute === 0) return candidate;
+  }
+  throw new Error("No Pacific midnight found");
+}
+
 // Ported from reference/index.html (prettyDate).
 // "2026-11-02" -> "Monday Nov 2, 2026"
 export function prettyDate(iso: string): string {

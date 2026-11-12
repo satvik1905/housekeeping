@@ -1,5 +1,7 @@
+import { sql } from "drizzle-orm";
 import {
   boolean,
+  check,
   date,
   integer,
   pgEnum,
@@ -7,6 +9,7 @@ import {
   primaryKey,
   serial,
   text,
+  timestamp,
 } from "drizzle-orm/pg-core";
 
 // Same values as StaffRole in src/data/staff.ts
@@ -48,4 +51,16 @@ export const dayStaff = pgTable(
     pickOrder: integer("pick_order").notNull(),
   },
   (table) => [primaryKey({ columns: [table.date, table.staffId] })],
+);
+
+// PIN lockout, shared by every device: a single row (id is always 1),
+// created by the migration
+export const authLockout = pgTable(
+  "auth_lockout",
+  {
+    id: integer("id").primaryKey().default(1),
+    failedAttempts: integer("failed_attempts").notNull().default(0),
+    lockedUntil: timestamp("locked_until", { withTimezone: true }),
+  },
+  (table) => [check("auth_lockout_single_row", sql`${table.id} = 1`)],
 );
