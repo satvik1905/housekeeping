@@ -3,6 +3,9 @@
 
 export type RoomStatus = "checkout" | "stayover" | "stayoverRoomService";
 
+// Marks for one day, by room number. Unmarked rooms are absent.
+export type RoomStatuses = Partial<Record<number, RoomStatus>>;
+
 export const STATUS_LABEL: Record<RoomStatus, string> = {
   checkout: "Checkout",
   stayover: "Stayover",

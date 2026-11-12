@@ -14,14 +14,14 @@ import { StaffChip } from "@/components/StaffChip";
 import type { Floor } from "@/data/rooms";
 import { ROOMS } from "@/data/rooms";
 import { ROLE_GROUPS, STAFF } from "@/data/staff";
-import type { RoomStatus } from "@/data/status";
+import type { RoomStatus, RoomStatuses } from "@/data/status";
 import { useToday } from "@/hooks/useToday";
 import { prettyDate } from "@/lib/date";
 
 // Everything that belongs to one day. A new Pacific date starts empty.
 type DayState = {
   date: string | null;
-  statuses: Partial<Record<number, RoomStatus>>;
+  statuses: RoomStatuses;
   // Names of picked staff, in the order picked
   staff: string[];
 };
