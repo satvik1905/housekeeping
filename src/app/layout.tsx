@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "@mantine/core/styles.css";
+import "@mantine/notifications/styles.css";
 
 import {
   ColorSchemeScript,
@@ -7,6 +8,7 @@ import {
   mantineHtmlProps,
 } from "@mantine/core";
 import { ModalsProvider } from "@mantine/modals";
+import { Notifications } from "@mantine/notifications";
 import { AppFrame } from "@/components/layout/AppFrame";
 import { cssVariablesResolver, theme } from "@/theme";
 
@@ -26,6 +28,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           cssVariablesResolver={cssVariablesResolver}
           forceColorScheme="light"
         >
+          <Notifications />
           <ModalsProvider>
             <AppFrame>{children}</AppFrame>
           </ModalsProvider>
