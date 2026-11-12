@@ -16,7 +16,6 @@ import { useMediaQuery } from "@mantine/hooks";
 import {
   IconCalendar,
   IconChartBar,
-  IconHistory,
   IconLayoutSidebarLeftCollapse,
   IconLayoutSidebarLeftExpand,
   IconUsers,
@@ -24,12 +23,12 @@ import {
 import { TOUCH_TARGET } from "@/theme";
 import classes from "./AppFrame.module.css";
 
+// hidden: the route exists but stays out of the nav until it's built
 const NAV_ITEMS = [
   { label: "Today", href: "/", icon: IconCalendar },
-  { label: "Past days", href: "/past", icon: IconHistory },
-  { label: "Staff", href: "/staff", icon: IconUsers },
-  { label: "Analytics", href: "/analytics", icon: IconChartBar },
-];
+  { label: "Staff", href: "/staff", icon: IconUsers, hidden: true },
+  { label: "Analytics", href: "/analytics", icon: IconChartBar, hidden: true },
+].filter((item) => !item.hidden);
 
 const FULL_WIDTH = 240;
 // Icon-only: one touch target plus xs navbar padding on each side,
