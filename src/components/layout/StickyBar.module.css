@@ -1,0 +1,8 @@
+/* Stays at the top of the content area while the page scrolls */
+.root {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding-block: var(--mantine-spacing-xs);
+  background-color: var(--mantine-color-body);
+}

@@ -1,0 +1,48 @@
+/* Ported from reference/index.html (.room, .room-main, .room-status) */
+.root {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-height: rem(104px);
+  padding: var(--mantine-spacing-xs);
+  text-align: left;
+  border: 1px solid var(--mantine-color-default-border);
+  border-radius: var(--mantine-radius-default);
+  background-color: var(--mantine-color-body);
+}
+
+.number {
+  font-weight: 700;
+}
+
+.status {
+  margin-top: auto;
+  font-weight: 600;
+}
+
+.root[data-status="checkout"] {
+  background-color: var(--mantine-color-checkoutBg-0);
+  border-color: var(--mantine-color-checkout-filled);
+
+  .status {
+    color: var(--mantine-color-checkout-filled);
+  }
+}
+
+.root[data-status="stayover"] {
+  background-color: var(--mantine-color-stayoverBg-0);
+  border-color: var(--mantine-color-stayover-filled);
+
+  .status {
+    color: var(--mantine-color-stayover-filled);
+  }
+}
+
+.root[data-status="stayoverRoomService"] {
+  background-color: var(--mantine-color-stayoverRoomServiceBg-0);
+  border-color: var(--mantine-color-stayoverRoomService-filled);
+
+  .status {
+    color: var(--mantine-color-stayoverRoomService-filled);
+  }
+}

@@ -29,6 +29,10 @@ export const theme = createTheme({
     checkout: colorsTuple("#9A4B2F"),
     stayover: colorsTuple("#2F5E86"),
     stayoverRoomService: colorsTuple("#6A4A8C"),
+    // Status tile backgrounds from reference/index.html (--co-bg, --so-bg, --rs-bg)
+    checkoutBg: colorsTuple("#F6E7E0"),
+    stayoverBg: colorsTuple("#E2ECF5"),
+    stayoverRoomServiceBg: colorsTuple("#ECE4F4"),
   },
   primaryColor: "navy",
   primaryShade: 9,
