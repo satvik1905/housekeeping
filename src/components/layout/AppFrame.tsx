@@ -70,7 +70,7 @@ export function AppFrame({ children }: AppFrameProps) {
         <AppShell.Section />
 
         <AppShell.Section grow>
-          <Stack gap="md">
+          <Stack gap="xs">
             {NAV_ITEMS.map(({ label, href, icon: Icon }) => (
               <Tooltip
                 key={href}
