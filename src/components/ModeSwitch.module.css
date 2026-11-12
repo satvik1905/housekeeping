@@ -1,0 +1,27 @@
+/*
+ * Active segment as in reference/index.html (.mode[aria-pressed="true"]):
+ * tint background, status-color border and text, so the dot stays visible.
+ */
+.root[data-mode="checkout"] {
+  --sc-color: var(--mantine-color-checkoutBg-0);
+  --sc-label-color: var(--mantine-color-checkout-filled);
+  --mode-border-color: var(--mantine-color-checkout-filled);
+}
+
+.root[data-mode="stayover"] {
+  --sc-color: var(--mantine-color-stayoverBg-0);
+  --sc-label-color: var(--mantine-color-stayover-filled);
+  --mode-border-color: var(--mantine-color-stayover-filled);
+}
+
+.root[data-mode="stayoverRoomService"] {
+  --sc-color: var(--mantine-color-stayoverRoomServiceBg-0);
+  --sc-label-color: var(--mantine-color-stayoverRoomService-filled);
+  --mode-border-color: var(--mantine-color-stayoverRoomService-filled);
+}
+
+/* The indicator after hydration; the active label's ::before before it */
+.indicator,
+.label[data-active]::before {
+  border: rem(1.5px) solid var(--mode-border-color);
+}

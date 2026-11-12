@@ -1,31 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { Button, Group, SegmentedControl, Stack, Text } from "@mantine/core";
+import { Button, Group, Stack, Text } from "@mantine/core";
 import { modals } from "@mantine/modals";
 import { Page } from "@/components/layout/Page";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Section } from "@/components/layout/Section";
 import { StickyBar } from "@/components/layout/StickyBar";
+import { ModeSwitch } from "@/components/ModeSwitch";
 import { RoomGrid } from "@/components/RoomGrid";
 import { RoomTile } from "@/components/RoomTile";
-import { StatusDot } from "@/components/StatusDot";
 import type { Floor } from "@/data/rooms";
 import { ROOMS } from "@/data/rooms";
 import type { RoomStatus } from "@/data/status";
-import { STATUSES } from "@/data/status";
 import { useToday } from "@/hooks/useToday";
 import { prettyDate } from "@/lib/date";
-
-const MODE_OPTIONS = STATUSES.map(({ value, label }) => ({
-  value,
-  label: (
-    <Group gap="xs" justify="center" wrap="nowrap">
-      <StatusDot status={value} />
-      {label}
-    </Group>
-  ),
-}));
 
 const FLOORS: { floor: Floor; title: string }[] = [
   { floor: 1, title: "100s" },
@@ -78,12 +67,7 @@ export default function Today() {
             <Text size="sm" c="dimmed">
               Tap rooms to mark as
             </Text>
-            <SegmentedControl
-              data={MODE_OPTIONS}
-              value={mode}
-              onChange={(value) => setMode(value as RoomStatus)}
-              color={mode}
-            />
+            <ModeSwitch value={mode} onChange={setMode} />
           </Group>
           <Text size="sm" c="dimmed">
             Tap a room again to unmark it.
