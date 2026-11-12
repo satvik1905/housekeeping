@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button, Group, Stack, Text } from "@mantine/core";
 import { modals } from "@mantine/modals";
 import { Page } from "@/components/layout/Page";
@@ -15,23 +15,11 @@ import { StaffChip } from "@/components/StaffChip";
 import type { Floor } from "@/data/rooms";
 import { ROOMS } from "@/data/rooms";
 import { ROLE_GROUPS, STAFF } from "@/data/staff";
-import type { RoomStatus, RoomStatuses } from "@/data/status";
+import type { RoomStatus } from "@/data/status";
 import { useToday } from "@/hooks/useToday";
 import { prettyDate } from "@/lib/date";
-
-// Everything that belongs to one day. A new Pacific date starts empty.
-type DayState = {
-  date: string | null;
-  statuses: RoomStatuses;
-  // Names of picked staff, in the order picked
-  staff: string[];
-};
-
-const emptyDay = (date: string | null): DayState => ({
-  date,
-  statuses: {},
-  staff: [],
-});
+import { emptyDay } from "@/lib/day";
+import { loadDay, saveDay } from "@/lib/dayStorage";
 
 const FLOORS: { floor: Floor; title: string }[] = [
   { floor: 1, title: "100s" },
@@ -40,15 +28,20 @@ const FLOORS: { floor: Floor; title: string }[] = [
 
 export default function Today() {
   const today = useToday();
+  // The mode isn't saved; it always starts on Checkout
   const [mode, setMode] = useState<RoomStatus>("checkout");
-  // In memory only for now
   const [day, setDay] = useState(() => emptyDay(today));
 
-  // The date changed (midnight, or the tablet woke up on a new day): reset.
-  // The first date after hydration just fills in; nothing was marked yet.
-  if (today !== day.date) {
-    setDay(day.date === null ? { ...day, date: today } : emptyDay(today));
+  // The date became known or changed. First date after hydration: restore
+  // today's saved day, if any. Later (midnight, or the tablet woke up on a
+  // new day): start empty.
+  if (today !== day.date && today !== null) {
+    setDay(day.date === null ? (loadDay(today) ?? emptyDay(today)) : emptyDay(today));
   }
+
+  // Keep the saved copy in step; Clear and rollover empty the day, which
+  // removes it
+  useEffect(() => saveDay(day), [day]);
 
   // Same as the reference: tapping a room already in the current mode
   // unmarks it; otherwise it's set to the current mode.
