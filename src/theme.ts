@@ -16,7 +16,7 @@ import { generateColors } from "@mantine/colors-generator";
 const figtree = Figtree({ subsets: ["latin"] });
 
 // Minimum height for anything tappable (CLAUDE.md: Touch)
-const TOUCH_TARGET = rem(44);
+export const TOUCH_TARGET = rem(44);
 
 export const theme = createTheme({
   fontFamily: figtree.style.fontFamily,

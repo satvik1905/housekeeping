@@ -1,5 +1,10 @@
-import { Title } from "@mantine/core";
+import { Page } from "@/components/layout/Page";
+import { PageHeader } from "@/components/layout/PageHeader";
 
 export default function Home() {
-  return <Title>Monarch Housekeeping</Title>;
+  return (
+    <Page>
+      <PageHeader title="Today" />
+    </Page>
+  );
 }

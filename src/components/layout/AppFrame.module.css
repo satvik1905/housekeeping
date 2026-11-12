@@ -1,0 +1,13 @@
+/* Icon-only NavLink: center the icon in the 44px touch target */
+.iconOnly {
+  justify-content: center;
+  padding-inline: 0;
+}
+
+.iconOnlySection {
+  margin-inline-end: 0;
+}
+
+.iconOnlyBody {
+  display: none;
+}

@@ -6,6 +6,7 @@ import {
   MantineProvider,
   mantineHtmlProps,
 } from "@mantine/core";
+import { AppFrame } from "@/components/layout/AppFrame";
 import { theme } from "@/theme";
 
 export const metadata: Metadata = {
@@ -20,7 +21,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       </head>
       <body>
         <MantineProvider theme={theme} forceColorScheme="light">
-          {children}
+          <AppFrame>{children}</AppFrame>
         </MantineProvider>
       </body>
     </html>
