@@ -10,6 +10,7 @@ import {
   NavLink,
   Stack,
   Tooltip,
+  useMantineTheme,
 } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
 import {
@@ -30,8 +31,6 @@ const NAV_ITEMS = [
   { label: "Analytics", href: "/analytics", icon: IconChartBar },
 ];
 
-// Full sidebar from 1024px (tablet landscape and up)
-const WIDE_QUERY = "(min-width: 64em)";
 const FULL_WIDTH = 240;
 // Icon-only: one touch target plus xs navbar padding on each side,
 // plus the 1px border Mantine draws on the navbar's inline end
@@ -43,76 +42,74 @@ type AppFrameProps = {
 
 export function AppFrame({ children }: AppFrameProps) {
   const pathname = usePathname();
-  const isWide = useMediaQuery(WIDE_QUERY);
+  const theme = useMantineTheme();
   const [userCollapsed, setUserCollapsed] = useState(false);
-  const iconOnly = !isWide || userCollapsed;
+
+  // Layout switches on the tablet breakpoint in CSS (no flash on load).
+  // This is only used to turn tooltips off when labels are visible.
+  const isWide = useMediaQuery(`(min-width: ${theme.breakpoints.tablet})`);
+  const labelsVisible = isWide && !userCollapsed;
 
   return (
     <AppShell
       navbar={{
-        width: iconOnly ? ICON_WIDTH : FULL_WIDTH,
+        width: {
+          base: ICON_WIDTH,
+          tablet: userCollapsed ? ICON_WIDTH : FULL_WIDTH,
+        },
         // Never switch to Mantine's full-width mobile navbar
         breakpoint: 0,
       }}
     >
-      <AppShell.Navbar p="xs">
+      <AppShell.Navbar
+        p="xs"
+        className={classes.navbar}
+        mod={{ collapsed: userCollapsed }}
+      >
         {/* Logo slot, filled in later */}
         <AppShell.Section />
 
         <AppShell.Section grow>
           <Stack gap="md">
-            {NAV_ITEMS.map(({ label, href, icon: Icon }) => {
-              const active = pathname === href;
-
-              if (!iconOnly) {
-                return (
-                  <NavLink
-                    key={href}
-                    component={Link}
-                    href={href}
-                    label={label}
-                    leftSection={<Icon />}
-                    active={active}
-                  />
-                );
-              }
-
-              return (
-                <Tooltip key={href} label={label} position="right">
-                  <NavLink
-                    component={Link}
-                    href={href}
-                    aria-label={label}
-                    leftSection={<Icon />}
-                    active={active}
-                    classNames={{
-                      root: classes.iconOnly,
-                      section: classes.iconOnlySection,
-                      body: classes.iconOnlyBody,
-                    }}
-                  />
-                </Tooltip>
-              );
-            })}
+            {NAV_ITEMS.map(({ label, href, icon: Icon }) => (
+              <Tooltip
+                key={href}
+                label={label}
+                position="right"
+                disabled={labelsVisible}
+              >
+                <NavLink
+                  component={Link}
+                  href={href}
+                  label={label}
+                  aria-label={label}
+                  leftSection={<Icon />}
+                  active={pathname === href}
+                  classNames={{
+                    root: classes.navLink,
+                    section: classes.navLinkSection,
+                    body: classes.navLinkBody,
+                  }}
+                />
+              </Tooltip>
+            ))}
           </Stack>
         </AppShell.Section>
 
-        {isWide && (
-          <AppShell.Section>
-            <ActionIcon
-              variant="subtle"
-              size={TOUCH_TARGET}
-              onClick={() => setUserCollapsed((c) => !c)}
-              aria-label={userCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-            >
-              {userCollapsed ? (
-                <IconLayoutSidebarLeftExpand />
-              ) : (
-                <IconLayoutSidebarLeftCollapse />
-              )}
-            </ActionIcon>
-          </AppShell.Section>
-        )}
+        <AppShell.Section className={classes.toggle}>
+          <ActionIcon
+            variant="subtle"
+            size={TOUCH_TARGET}
+            onClick={() => setUserCollapsed((c) => !c)}
+            aria-label={userCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {userCollapsed ? (
+              <IconLayoutSidebarLeftExpand />
+            ) : (
+              <IconLayoutSidebarLeftCollapse />
+            )}
+          </ActionIcon>
+        </AppShell.Section>
       </AppShell.Navbar>
 
       <AppShell.Main>{children}</AppShell.Main>

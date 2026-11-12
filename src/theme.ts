@@ -35,6 +35,12 @@ export const theme = createTheme({
 
   defaultRadius: rem(12),
 
+  // Added alongside Mantine's defaults (xs–xl stay unchanged).
+  // Keep in sync with mantine-breakpoint-tablet in postcss.config.cjs.
+  breakpoints: {
+    tablet: "64em", // 1024px
+  },
+
   spacing: {
     xs: rem(8),
     md: rem(16),
