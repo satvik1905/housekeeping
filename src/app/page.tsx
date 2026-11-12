@@ -38,11 +38,11 @@ export default function Today() {
     });
   };
 
-  // Button labels match the reference's native confirm(): OK / Cancel
   const confirmClear = () =>
     modals.openConfirmModal({
       children: <Text>Clear all rooms and housekeepers? This can&apos;t be undone.</Text>,
-      labels: { confirm: "OK", cancel: "Cancel" },
+      labels: { confirm: "Clear", cancel: "Cancel" },
+      confirmProps: { color: "red" },
       // Like the reference's confirm(): no close button (it'd be under 44px)
       withCloseButton: false,
       onConfirm: () => setStatuses({}),
