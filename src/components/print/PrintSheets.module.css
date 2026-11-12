@@ -1,0 +1,22 @@
+/* Ported from reference/index.html (#sheets, @page, @media print) */
+
+@page {
+  size: letter portrait;
+  margin: 0.5in;
+}
+
+/* The sheets only exist on paper */
+.root {
+  display: none;
+}
+
+@media print {
+  .root {
+    display: block;
+  }
+
+  /* Only the sheets print: hide the app and anything else on the body */
+  :global(body) > :global(*):not(.root) {
+    display: none !important;
+  }
+}

@@ -9,6 +9,7 @@ import { Section } from "@/components/layout/Section";
 import { StickyBar } from "@/components/layout/StickyBar";
 import { ModeSwitch } from "@/components/ModeSwitch";
 import { RoomGrid } from "@/components/RoomGrid";
+import { PrintSheets } from "@/components/print/PrintSheets";
 import { RoomTile } from "@/components/RoomTile";
 import { StaffChip } from "@/components/StaffChip";
 import type { Floor } from "@/data/rooms";
@@ -70,6 +71,12 @@ export default function Today() {
     }));
   };
 
+  const nobodyPicked = day.staff.length === 0;
+  // Picked staff in pick order, for the printed sheets
+  const pickedMembers = day.staff.flatMap((name) =>
+    STAFF.filter((member) => member.name === name),
+  );
+
   const confirmClear = () =>
     modals.openConfirmModal({
       children: <Text>Clear all rooms and staff? This can&apos;t be undone.</Text>,
@@ -87,9 +94,14 @@ export default function Today() {
         // Non-breaking space keeps the line's height until the date is known
         subtitle={today ? prettyDate(today) : "\u00a0"}
         actions={
-          <Button variant="default" onClick={confirmClear}>
-            Clear
-          </Button>
+          <>
+            <Button variant="default" onClick={confirmClear}>
+              Clear
+            </Button>
+            <Button disabled={nobodyPicked} onClick={() => window.print()}>
+              Print sheets
+            </Button>
+          </>
         }
       />
 
@@ -109,7 +121,9 @@ export default function Today() {
 
       <Section title="Staff">
         <Text size="sm" c="dimmed">
-          Pick who&apos;s working today. Sheets print in the order you pick them.
+          {nobodyPicked
+            ? "Pick at least one person to print."
+            : "Pick who's working today. Sheets print in the order you pick them."}
         </Text>
         {ROLE_GROUPS.map(({ role, label }) => (
           <Stack key={role} gap="xs">
@@ -147,6 +161,10 @@ export default function Today() {
           </RoomGrid>
         </Section>
       ))}
+
+      {today && (
+        <PrintSheets members={pickedMembers} date={today} statuses={day.statuses} />
+      )}
     </Page>
   );
 }
