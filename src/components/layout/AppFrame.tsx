@@ -24,10 +24,11 @@ import { TOUCH_TARGET } from "@/theme";
 import classes from "./AppFrame.module.css";
 
 // hidden: the route exists but stays out of the nav until it's built
+// paths: every route the item is active on (Today's steps are / and /assign)
 const NAV_ITEMS = [
-  { label: "Today", href: "/", icon: IconCalendar },
-  { label: "Staff", href: "/staff", icon: IconUsers, hidden: true },
-  { label: "Analytics", href: "/analytics", icon: IconChartBar, hidden: true },
+  { label: "Today", href: "/", paths: ["/", "/assign"], icon: IconCalendar },
+  { label: "Staff", href: "/staff", paths: ["/staff"], icon: IconUsers, hidden: true },
+  { label: "Analytics", href: "/analytics", paths: ["/analytics"], icon: IconChartBar, hidden: true },
 ].filter((item) => !item.hidden);
 
 const FULL_WIDTH = 240;
@@ -70,7 +71,7 @@ export function AppFrame({ children }: AppFrameProps) {
 
         <AppShell.Section grow>
           <Stack gap="xs">
-            {NAV_ITEMS.map(({ label, href, icon: Icon }) => (
+            {NAV_ITEMS.map(({ label, href, paths, icon: Icon }) => (
               <Tooltip
                 key={href}
                 label={label}
@@ -83,7 +84,7 @@ export function AppFrame({ children }: AppFrameProps) {
                   label={label}
                   aria-label={label}
                   leftSection={<Icon />}
-                  active={pathname === href}
+                  active={paths.includes(pathname)}
                   classNames={{
                     root: classes.navLink,
                     section: classes.navLinkSection,

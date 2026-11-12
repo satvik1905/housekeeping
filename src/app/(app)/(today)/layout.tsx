@@ -1,11 +1,14 @@
+import type { ReactNode } from "react";
 import { Suspense } from "react";
 import { connection } from "next/server";
 import { Page } from "@/components/layout/Page";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { getToday } from "@/server/today";
-import { TodayScreen } from "./TodayScreen";
+import { TodayFlow } from "./TodayFlow";
 
-export default function Today() {
+// Today's two steps, Rooms (/) and Assign (/assign). The layout stays
+// mounted between them, so both share one day state.
+export default function TodayLayout({ children }: { children: ReactNode }) {
   return (
     <Suspense
       fallback={
@@ -15,13 +18,13 @@ export default function Today() {
         </Page>
       }
     >
-      <LoadedToday />
+      <LoadedToday>{children}</LoadedToday>
     </Suspense>
   );
 }
 
 // Today's state comes from the database on every request
-async function LoadedToday() {
+async function LoadedToday({ children }: { children: ReactNode }) {
   await connection();
-  return <TodayScreen initial={await getToday()} />;
+  return <TodayFlow initial={await getToday()}>{children}</TodayFlow>;
 }
