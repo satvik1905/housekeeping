@@ -238,6 +238,10 @@ export function TodayFlow({ initial, children }: TodayFlowProps) {
     ];
     const outdated = named.filter((id) => printed[id] !== undefined);
     if (outdated.length === 0) return;
+    // Picked housekeepers who just got rooms but have no sheet yet
+    const unprinted = [
+      ...new Set(moves.map(({ to }) => to).filter((id) => id !== null && printed[id] === undefined)),
+    ] as number[];
 
     const name = (id: number) => people.get(id)?.name ?? "";
     const lines = moves.map(({ roomNumber, from, to }) =>
@@ -255,11 +259,15 @@ export function TodayFlow({ initial, children }: TodayFlowProps) {
           ? `${outdatedNames[0]}'s printed sheet is out of date.`
           : `${outdatedNames.join(" and ")}'s printed sheets are out of date.`;
 
+    const notYet = unprinted.map((id) => `${name(id)}'s sheet hasn't been printed yet.`);
+    // Reprint covers both, in pick order
+    const toPrint = day.picks.filter(({ id }) => outdated.includes(id) || unprinted.includes(id));
+
     modals.openConfirmModal({
-      children: <Text>{[...lines, sheets].join(" ")}</Text>,
+      children: <Text>{[...lines, sheets, ...notYet].join(" ")}</Text>,
       labels: { confirm: "Reprint", cancel: "Close" },
       withCloseButton: false,
-      onConfirm: () => printSheets(outdated.map((id) => people.get(id)!)),
+      onConfirm: () => printSheets(toPrint),
     });
   };
 
