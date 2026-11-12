@@ -21,9 +21,9 @@ Use theme tokens only, never raw px.
 - Don't use `sm` or any value outside these.
 - Items that together form one list or control (nav items, chip groups, list rows) count as inside a component and use `xs`. `md` is only for separate cards and blocks.
 
-## Touch
+## Devices
 
-- Anything tappable is at least 44px tall.
+- Desktop only, used with a mouse. No touch.
 
 ## Layout
 
