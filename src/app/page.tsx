@@ -72,7 +72,7 @@ export default function Today() {
 
   const confirmClear = () =>
     modals.openConfirmModal({
-      children: <Text>Clear all rooms and housekeepers? This can&apos;t be undone.</Text>,
+      children: <Text>Clear all rooms and staff? This can&apos;t be undone.</Text>,
       labels: { confirm: "Clear", cancel: "Cancel" },
       confirmProps: { color: "red" },
       // Like the reference's confirm(): no close button (it'd be under 44px)
