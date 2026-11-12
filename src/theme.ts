@@ -10,6 +10,7 @@ import {
   DEFAULT_THEME,
   Input,
   NavLink,
+  PinInput,
   rem,
   SegmentedControl,
 } from "@mantine/core";
@@ -76,6 +77,10 @@ export const theme = createTheme({
     }),
     Input: Input.extend({
       styles: { input: { minHeight: TOUCH_TARGET } },
+    }),
+    // Each box is one touch target square
+    PinInput: PinInput.extend({
+      vars: () => ({ root: { "--pin-input-size": TOUCH_TARGET } }),
     }),
     NavLink: NavLink.extend({
       styles: {

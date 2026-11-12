@@ -9,7 +9,6 @@ import {
 } from "@mantine/core";
 import { ModalsProvider } from "@mantine/modals";
 import { Notifications } from "@mantine/notifications";
-import { AppFrame } from "@/components/layout/AppFrame";
 import { cssVariablesResolver, theme } from "@/theme";
 
 export const metadata: Metadata = {
@@ -30,7 +29,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         >
           <Notifications />
           <ModalsProvider>
-            <AppFrame>{children}</AppFrame>
+            {children}
           </ModalsProvider>
         </MantineProvider>
       </body>

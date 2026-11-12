@@ -22,7 +22,7 @@ import type { RoomStatus } from "@/data/status";
 import { useDayRefresh } from "@/hooks/useDayRefresh";
 import { prettyDate } from "@/lib/date";
 import { createSaveQueue } from "@/lib/saveQueue";
-import type { Today, TodayStaff, WriteResult } from "@/server/today";
+import type { Today, TodayStaff, WriteResult } from "@/server/todayData";
 import { clearDay, getToday, setMark, togglePick } from "@/server/today";
 
 const FLOORS: { floor: Floor; title: string }[] = [

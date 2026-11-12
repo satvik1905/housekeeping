@@ -1,4 +1,4 @@
-// Tests the Today server actions against the database in .env.local.
+// Tests the Today data functions (src/server/todayData.ts) against the database in .env.local.
 // It clears today's marks and picks, so it only runs on the dev branch.
 // Run with `npm run test:today`.
 import type { RoomStatus } from "../src/data/status";
@@ -6,7 +6,7 @@ process.loadEnvFile(".env.local");
 if (process.env.NEON_BRANCH !== "dev") {
   throw new Error(`Refusing to run: .env.local points at "${process.env.NEON_BRANCH}", not dev`);
 }
-const { getToday, setMark, togglePick, clearDay } = await import("../src/server/today");
+const { getToday, setMark, togglePick, clearDay } = await import("../src/server/todayData");
 const { neon } = await import("@neondatabase/serverless");
 const raw = neon(process.env.DATABASE_URL!);
 let pass = 0, fail = 0;
