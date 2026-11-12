@@ -29,6 +29,7 @@ Use theme tokens only, never raw px.
 
 - Screens are assembled only from shared layout components (`Page`, `PageHeader`, `Section`) plus `Stack`/`Group` using the tokens above. No screen sets its own padding or gaps.
 - Build a shared component once and reuse it. Never rebuild one by hand on another screen.
+- Multi-step flows: a footer pinned to the bottom of the content area. Back (secondary) and the primary action are grouped together at the bottom right, Back immediately left of the primary. Nothing else sits between them.
 
 ## Source of truth
 
