@@ -20,7 +20,7 @@ export function FlowLayout({ children, footerStart, footerActions }: FlowLayoutP
       <Box className={classes.body}>
         <Page>{children}</Page>
       </Box>
-      <Group className={classes.footer} justify="space-between" wrap="nowrap" px="lg" py="xs">
+      <Group className={classes.footer} justify="space-between" wrap="nowrap" px="lg" py="md">
         <Box>{footerStart}</Box>
         <Group gap="xs" wrap="nowrap">
           {footerActions}

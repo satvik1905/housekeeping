@@ -193,7 +193,12 @@ export function TodayFlow({ initial, children }: TodayFlowProps) {
   return (
     <TodayContext value={{ day, mode, setMode, toggleRoom, toggleStaff, confirmClear }}>
       <FlowLayout {...footer}>
-        <Stepper active={step} allowNextStepsSelect={false}>
+        {/* Completed steps are clickable and go back; later ones aren't */}
+        <Stepper
+          active={step}
+          allowNextStepsSelect={false}
+          onStepClick={(index) => router.push(STEPS[index].href)}
+        >
           {STEPS.map(({ label }) => (
             <Stepper.Step key={label} label={label} />
           ))}
