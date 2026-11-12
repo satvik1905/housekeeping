@@ -6,6 +6,7 @@ import {
   MantineProvider,
   mantineHtmlProps,
 } from "@mantine/core";
+import { ModalsProvider } from "@mantine/modals";
 import { AppFrame } from "@/components/layout/AppFrame";
 import { theme } from "@/theme";
 
@@ -21,7 +22,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       </head>
       <body>
         <MantineProvider theme={theme} forceColorScheme="light">
-          <AppFrame>{children}</AppFrame>
+          <ModalsProvider>
+            <AppFrame>{children}</AppFrame>
+          </ModalsProvider>
         </MantineProvider>
       </body>
     </html>

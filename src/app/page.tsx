@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Group, SegmentedControl, Stack, Text } from "@mantine/core";
+import { Button, Group, SegmentedControl, Stack, Text } from "@mantine/core";
+import { modals } from "@mantine/modals";
 import { Page } from "@/components/layout/Page";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Section } from "@/components/layout/Section";
@@ -13,6 +14,8 @@ import type { Floor } from "@/data/rooms";
 import { ROOMS } from "@/data/rooms";
 import type { RoomStatus } from "@/data/status";
 import { STATUSES } from "@/data/status";
+import { useToday } from "@/hooks/useToday";
+import { prettyDate } from "@/lib/date";
 
 const MODE_OPTIONS = STATUSES.map(({ value, label }) => ({
   value,
@@ -30,6 +33,7 @@ const FLOORS: { floor: Floor; title: string }[] = [
 ];
 
 export default function Today() {
+  const today = useToday();
   const [mode, setMode] = useState<RoomStatus>("checkout");
   // In memory only for now
   const [statuses, setStatuses] = useState<Partial<Record<number, RoomStatus>>>({});
@@ -45,9 +49,28 @@ export default function Today() {
     });
   };
 
+  // Button labels match the reference's native confirm(): OK / Cancel
+  const confirmClear = () =>
+    modals.openConfirmModal({
+      children: <Text>Clear all rooms and housekeepers? This can&apos;t be undone.</Text>,
+      labels: { confirm: "OK", cancel: "Cancel" },
+      // Like the reference's confirm(): no close button (it'd be under 44px)
+      withCloseButton: false,
+      onConfirm: () => setStatuses({}),
+    });
+
   return (
     <Page>
-      <PageHeader title="Today" />
+      <PageHeader
+        title="Today"
+        // Non-breaking space keeps the line's height until the date is known
+        subtitle={today ? prettyDate(today) : "\u00a0"}
+        actions={
+          <Button variant="default" onClick={confirmClear}>
+            Clear
+          </Button>
+        }
+      />
 
       <StickyBar>
         <Stack gap="xs">
